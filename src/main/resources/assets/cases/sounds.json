@@ -1,0 +1,11 @@
+{
+  "rolling": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "cases:rolling",
+        "stream": false
+      }
+    ]
+  }
+}
