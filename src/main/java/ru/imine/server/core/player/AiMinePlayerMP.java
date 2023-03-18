@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 public class AiMinePlayerMP
 {
-    private static String tablename;
     private static final Map<Long, AiMinePlayerMP> players = new ConcurrentHashMap<>();
 
     protected long playerId;
@@ -46,28 +45,6 @@ public class AiMinePlayerMP
 
     protected EntityPlayerMP entity;
     protected PlayerStorageProxy storage;
-
-    static
-    {
-        try
-        {
-            tablename = AiMineCore.getServerName();
-            MySQL.getGameDataSQL().updateSQL("CREATE TABLE IF NOT EXISTS `"+tablename+"` (" +
-                    "  `nickname` bigint(20) unsigned NOT NULL," +
-                    "  `money` bigint(20) NOT NULL DEFAULT '0'," +
-                    "  `NickColor` varchar(11) NULL," +
-                    "  `ChatColor` varchar(11) NULL," +
-                    "  PRIMARY KEY (`nickname`)" +
-                    ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
-        }
-        catch (Exception e)
-        {
-            AiMine.LOGGER.error("Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
-            Discord.instance.sendErrorLog("iMineCore", "Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
-
-            FMLCommonHandler.instance().exitJava(1, false);
-        }
-    }
 
     @Deprecated
     public static AiMinePlayerMP addFromHere(PlayerEvent.PlayerLoggedInEvent event)
@@ -183,13 +160,13 @@ public class AiMinePlayerMP
             else if (uuid != null)
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
             else if (name != null && !name.isEmpty())
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `nickname`=?", name);
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
             if (rows.size() == 0);
             Row row = rows.get(0);
             playerId = row.getLong("id");
             uuid = UUID.fromString(row.getString("uuid"));
-            name = row.getString("nickname");
-            String hwUuidStr = row.getString("hw_uuid");
+            name = row.getString("username");
+            String hwUuidStr = row.getString("hwidId");
             hwUuid = hwUuidStr==null ? null : UUID.fromString(hwUuidStr);
             String clientSeedStr = row.getString("client_seed");
             clientSeed = clientSeedStr==null ? null : UUID.fromString(clientSeedStr);
@@ -309,15 +286,15 @@ public class AiMinePlayerMP
     {
         try
         {
-            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `money` FROM `users` WHERE nickname=?", name))
+            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `balance_real` FROM `users` WHERE username=?", name))
             {
                 return row.getLong(1);
             }
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName " + tablename, e);
-            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName " + tablename, e);
+            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName ", e);
+            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName ", e);
 
             if (entity!=null)
                 sendMessage("§cПроизошел сбой в работе системы монет. Повтори операцию позже.");
@@ -327,15 +304,15 @@ public class AiMinePlayerMP
 
     public void changeMoney(long amount) throws SQLException
     {
-        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`nickname`, `money`)" +
-                "VALUES (?, ?) ON DUPLICATE KEY UPDATE `money` = `money` + ?;", name, amount, amount);
+        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`username`, `balance_real`)" +
+                "VALUES (?, ?) ON DUPLICATE KEY UPDATE `balance_real` = `balance_real` + ?;", name, amount, amount);
     }
 
     public int getChatColor()
     {
         try
         {
-            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `ChatColor` FROM `users` WHERE nickname=?", name))
+            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `ChatColor` FROM `users` WHERE username=?", name))
             {
                 Integer value = row.getInteger(15);
                 if (value==null)
@@ -344,8 +321,8 @@ public class AiMinePlayerMP
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to get player's chat color from table. TableName=`users` nickname="+name, e);
-            Discord.instance.sendErrorLog("2", "Failed to get player's chat color from table. TableName=`users` nickname="+name, e);
+            AiMine.LOGGER.error("Failed to get player's chat color from table. TableName=`users` username="+name, e);
+            Discord.instance.sendErrorLog("2", "Failed to get player's chat color from table. TableName=`users` username="+name, e);
         }
         return 0xFFFFFFFF;
     }
@@ -354,7 +331,7 @@ public class AiMinePlayerMP
     {
         try
         {
-            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `NickColor` FROM `users` WHERE nickname=?", name))
+            for (Row row : MySQL.getGameDataSQL().querySQL("SELECT `NickColor` FROM `users` WHERE username=?", name))
             {
                 Integer value = row.getInteger(16);
                 if (value==null)
@@ -363,21 +340,21 @@ public class AiMinePlayerMP
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to get player's nick color from table. TableName=`users` nickname="+name, e);
-            Discord.instance.sendErrorLog("3", "Failed to get player's nick color from table. TableName=`users` nickname="+name, e);
+            AiMine.LOGGER.error("Failed to get player's nick color from table. TableName=`users` username="+name, e);
+            Discord.instance.sendErrorLog("3", "Failed to get player's nick color from table. TableName=`users` username="+name, e);
         }
         return 0xFFFFFFFF;
     }
 
     public void setChatColor(int color) throws SQLException
     {
-        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`nickname`, `ChatColor`)" +
+        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`username`, `ChatColor`)" +
                 "VALUES (?, ?) ON DUPLICATE KEY UPDATE `ChatColor` = `ChatColor` + ?;", name, color, color);
     }
 
     public void setNickColor(int color) throws SQLException
     {
-        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`nickname`, `NickColor`)" +
+        MySQL.getGameDataSQL().updateSQL("INSERT IGNORE INTO `users` (`username`, `NickColor`)" +
                 "VALUES (?, ?) ON DUPLICATE KEY UPDATE `NickColor` = `NickColor` + ?;", name, color, color);
     }
 
