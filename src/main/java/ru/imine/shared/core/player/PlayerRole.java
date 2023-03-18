@@ -22,7 +22,7 @@ public enum PlayerRole
     public final int level;
     public final Smile icon;
 
-    PlayerRole(String name, String displayName, int level, String iconGroup, String iconName)
+    PlayerRole( String name, String displayName, int level, String iconGroup, String iconName)
     {
         this.name = name;
         this.displayName=displayName;
@@ -32,4 +32,5 @@ public enum PlayerRole
         else
             this.icon = SmileDictionary.getSmile(iconGroup, iconName);
     }
+
 }

@@ -1,11 +1,14 @@
 package ru.imine.server.fancychat.packet;
 
+import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import ru.imine.server.core.player.AiMinePlayerMP;
 import ru.imine.server.fancychat.smile.SmileManager;
+import ru.imine.server.util.AiCommand;
 import ru.imine.shared.core.player.PlayerRank;
 import ru.imine.shared.fancychat.FancyChat;
 import ru.imine.shared.fancychat.chat.*;
@@ -13,7 +16,11 @@ import ru.imine.shared.fancychat.chat.util.ChatBcgColor;
 import ru.imine.shared.fancychat.packet.FCPacket0ChatMessage;
 import ru.imine.shared.fancychat.smile.Smile;
 import ru.imine.shared.util.Discord;
+import ru.imine.version.server.CommandMapper;
 import ru.imine.version.server.PlayerMapper;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class FCPacketHandler
 {
@@ -25,7 +32,7 @@ public class FCPacketHandler
         AiMinePlayerMP sender = AiMinePlayerMP.get(PlayerMapper.instance().get(ctx.getServerHandler()));
         line.sender = sender.asUser(sender);
 
-        /*String plainText = line.toPlainText();
+        String plainText = line.toPlainText();
         if (plainText.startsWith("/"))
         {
             String[] splits = plainText.substring(1).split(" ");
@@ -56,7 +63,7 @@ public class FCPacketHandler
 
             ctx.getServerHandler().processChatMessage(new CPacketChatMessage(plainText));
             return null;
-        }*/
+        }
 
         for (FancyChatElement element : line)
         {
