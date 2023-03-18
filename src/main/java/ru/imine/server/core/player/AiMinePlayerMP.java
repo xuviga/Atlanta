@@ -78,7 +78,7 @@ public class AiMinePlayerMP
         // Set the UUID of the player to the UUID of the logged-in player
         player.uuid = event.player.getUniqueID();
         // If player authentication is successfully loaded from the database
-        if (player.loadPlayerAuth())
+        if (player.loadPlayerAuth((Connection) player))
         {
             // Set the entity of the player to the logged-in player
             player.entity = (EntityPlayerMP) event.player;
@@ -124,27 +124,44 @@ public class AiMinePlayerMP
         return players.values().stream().filter(it -> it.name.equalsIgnoreCase(username)).findFirst().orElse(null);
     }
 
-    public static AiMinePlayerMP getOffline(String name)
-    {
+    public static AiMinePlayerMP getOffline(String name) {
         AiMinePlayerMP player = get(name);
-        if (player!=null)
+        if (player != null) {
             return player;
+        }
         player = new AiMinePlayerMP();
         player.name = name;
-        if (player.loadPlayerAuth())
+        if (player.loadPlayerAuth((Connection) player)) {
+            // Player data loaded successfully, return the new player object
+            players.put(player.playerId, player); // Make sure to add the new player object to the thread-safe players map
             return player;
+        }
         return null;
     }
 
+    /**
+     * Returns an offline player with the specified player ID. If the player is already loaded, returns the loaded player,
+     * otherwise creates a new player object and loads the player data from the database.
+     *
+     * @param playerId the ID of the player to retrieve
+     * @return an AiMinePlayerMP object representing the offline player, or null if the player was not found
+     */
     public static AiMinePlayerMP getOffline(long playerId)
     {
         AiMinePlayerMP player = get(playerId);
-        if (player!=null)
+        if (player != null) {
+            // Player is already loaded, return the existing player object
             return player;
+        }
+        // Player is not loaded, create a new player object and load the player data from the database
         player = new AiMinePlayerMP();
         player.playerId = playerId;
-        if (player.loadPlayerAuth())
+        if (player.loadPlayerAuth((Connection) player)) {
+            // Player data loaded successfully, return the new player object
+            players.put(player.playerId, player); // Make sure to add the new player object to the thread-safe players map
             return player;
+        }
+        // Player data not found in the database, return null
         return null;
     }
 
