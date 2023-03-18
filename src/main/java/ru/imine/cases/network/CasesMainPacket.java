@@ -1,4 +1,4 @@
-package ru.will0376.cases.network;
+package ru.imine.cases.network;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -6,8 +6,8 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import ru.will0376.cases.gui.GuiCaseView;
-import ru.will0376.cases.gui.GuiCasesShop;
+import ru.imine.cases.gui.GuiCaseView;
+import ru.imine.cases.gui.GuiCasesShop;
 
 public class CasesMainPacket implements IMessage {
 	String text;

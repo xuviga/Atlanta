@@ -1,11 +1,11 @@
-package ru.will0376.cases.server.json;
+package ru.imine.cases.server.json;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import net.minecraft.item.ItemStack;
 import ru.justagod.cutter.GradleSide;
 import ru.justagod.cutter.GradleSideOnly;
-import ru.will0376.cases.server.ItemStackBuilder;
+import ru.imine.cases.server.ItemStackBuilder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserial
 		if (displayName != null)
 			displayName = displayName.replace('&', '\u00a7');
 
+		assert material != null;
 		return new ItemStackBuilder(material).withAmount(amount).withName(displayName).withEnchant(enchants).withLore(lore).build();
 
 	}

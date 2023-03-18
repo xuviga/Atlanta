@@ -1,4 +1,4 @@
-package ru.will0376.cases.server;
+package ru.imine.cases.server;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -15,16 +15,16 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import ru.justagod.cutter.GradleSide;
 import ru.justagod.cutter.GradleSideOnly;
-import ru.will0376.cases.Cases;
-import ru.will0376.cases.network.CasesListPacket;
-import ru.will0376.cases.network.CasesMainPacket;
-import ru.will0376.cases.network.CasesViewPacket;
+import ru.imine.cases.Cases;
+import ru.imine.cases.network.CasesListPacket;
+import ru.imine.cases.network.CasesMainPacket;
+import ru.imine.cases.network.CasesViewPacket;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.will0376.cases.server.JCases.decrementCases;
+import static ru.imine.cases.server.JCases.decrementCases;
 
 @GradleSideOnly(GradleSide.SERVER)
 public class Comma extends CommandBase {
@@ -186,7 +186,7 @@ public class Comma extends CommandBase {
 					}
 					int value = args.length > 3 ? Integer.parseInt(args[3]) : 1;
 
-					JCases.decrementCases(strPl, caseName, value);
+					decrementCases(strPl, caseName, value);
 					JCases.savePlayers();
 					sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Успешно выполнено"));
 					return;

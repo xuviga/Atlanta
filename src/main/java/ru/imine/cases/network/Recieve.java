@@ -1,4 +1,4 @@
-package ru.will0376.cases.network;
+package ru.imine.cases.network;
 
 public class Recieve {
 	public static String CASES_LIST = "";

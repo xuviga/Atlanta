@@ -1,4 +1,4 @@
-package ru.will0376.cases.network;
+package ru.imine.cases.network;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;

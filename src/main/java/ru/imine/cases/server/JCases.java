@@ -1,4 +1,4 @@
-package ru.will0376.cases.server;
+package ru.imine.cases.server;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
@@ -10,8 +10,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import ru.justagod.cutter.GradleSide;
 import ru.justagod.cutter.GradleSideOnly;
-import ru.will0376.cases.server.json.ItemStackAdapter;
-import ru.will0376.cases.server.json.MaterialData;
+import ru.imine.cases.server.json.ItemStackAdapter;
+import ru.imine.cases.server.json.MaterialData;
 
 import java.io.File;
 import java.io.FileWriter;

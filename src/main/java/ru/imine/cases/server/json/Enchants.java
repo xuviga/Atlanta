@@ -1,4 +1,4 @@
-package ru.will0376.cases.server.json;
+package ru.imine.cases.server.json;
 
 public class Enchants {
 	int id;

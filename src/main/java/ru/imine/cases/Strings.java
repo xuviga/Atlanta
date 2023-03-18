@@ -1,4 +1,4 @@
-package ru.will0376.cases;
+package ru.imine.cases;
 
 public class Strings {
 	public static String itemsCanDrop = "\u041f\u0440\u0435\u0434\u043c\u0435\u0442\u044b, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043c\u043e\u0433\u0443\u0442 \u0432\u044b\u043f\u0430\u0441\u0442\u044c:";

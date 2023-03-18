@@ -1,4 +1,4 @@
-package ru.will0376.cases.server;
+package ru.imine.cases.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import ru.justagod.cutter.GradleSide;
 import ru.justagod.cutter.GradleSideOnly;
-import ru.will0376.cases.server.json.Enchants;
+import ru.imine.cases.server.json.Enchants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +73,7 @@ public class ItemStackBuilder {
 		}
 		return this;
 	}
-	/*public ItemStackBuilder withRawIdEnchants(Map<Enchantment, Integer> enchants) {
+	public ItemStackBuilder withRawIdEnchants(Map<Enchantment, Integer> enchants) {
 		if (enchants == null) {
 			return this;
 		}
@@ -97,7 +97,7 @@ public class ItemStackBuilder {
 		}
 
 		return withEnchants(map);
-	}*/
+	}
 
 	public ItemStackBuilder withName(String displayName) {
 		this.displayName = displayName;

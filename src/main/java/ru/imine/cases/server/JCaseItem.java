@@ -1,4 +1,4 @@
-package ru.will0376.cases.server;
+package ru.imine.cases.server;
 
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.item.Item;

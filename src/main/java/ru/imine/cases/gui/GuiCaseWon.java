@@ -1,4 +1,4 @@
-package ru.will0376.cases.gui;
+package ru.imine.cases.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
-import ru.will0376.cases.model.ModelGuiCase;
+import ru.imine.cases.model.ModelGuiCase;
 
 import java.awt.*;
 

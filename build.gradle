@@ -12,10 +12,14 @@ buildscript {
             name = "github"
             url = "https://github.com/juanmuscaria/maven/raw/master"
         }
+		maven { url = 'http://files.minecraftforge.net/maven' }
+		maven { url = 'https://plugins.gradle.org/m2/' }
+		maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle2:[2.3-1.0.0-SNAPSHOT,)'
 		classpath ':proguard:'
+		classpath 'tech.justagod:cutter:2.1.0-SNAPSHOT'
     }
 }
 
@@ -28,6 +32,7 @@ repositories {
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'cutter'
 
 group= "iMine"
 def name = "iMine"
@@ -44,7 +49,7 @@ minecraft {
 	replace '@VERSION@', project.version
 	// makeObfSourceJar = false
 }
-
+cutter.initializeDefault(true,false)
 dependencies {
 	compile name: 'CodeChickenLib_1.12.2_3.2.3.358_universal'
 	compile name: 'CoFHCore-1.12.2-4.6.6.1-universal'
@@ -62,6 +67,7 @@ task client(type: Jar) {
 	//baseName = "iMine-Client"
 
 	from(zipTree("build/unobfuscated/iMine.jar")) {
+		include "ru/imine/cases/**"
 		include "ru/imine/client/**"
 		include "ru/imine/shared/**"
 		include "ru/imine/version/client/**"
@@ -81,6 +87,7 @@ task server(type: Jar) {
 	//baseName = "iMine-Server"
 
 	from(zipTree("build/unobfuscated/iMine.jar")) {
+		include "ru/imine/cases/**"
 		include "ru/imine/server/**"
 		include "ru/imine/shared/**"
 		include "ru/imine/version/server/**"

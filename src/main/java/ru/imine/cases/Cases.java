@@ -1,4 +1,4 @@
-package ru.will0376.cases;
+package ru.imine.cases;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -13,11 +13,11 @@ import org.lwjgl.input.Keyboard;
 import ru.justagod.cutter.GradleSide;
 import ru.justagod.cutter.GradleSideOnly;
 import ru.justagod.cutter.invoke.Invoke;
-import ru.will0376.cases.network.CasesListPacket;
-import ru.will0376.cases.network.CasesMainPacket;
-import ru.will0376.cases.network.CasesViewPacket;
-import ru.will0376.cases.server.Comma;
-import ru.will0376.cases.server.JCases;
+import ru.imine.cases.network.CasesListPacket;
+import ru.imine.cases.network.CasesMainPacket;
+import ru.imine.cases.network.CasesViewPacket;
+import ru.imine.cases.server.Comma;
+import ru.imine.cases.server.JCases;
 
 import java.io.File;
 

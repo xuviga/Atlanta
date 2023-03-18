@@ -1,4 +1,4 @@
-package ru.will0376.cases.gui;
+package ru.imine.cases.gui;
 
 import com.google.common.collect.Maps;
 import net.minecraft.client.gui.GuiScreen;
@@ -7,8 +7,8 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
-import ru.will0376.cases.Rolling;
-import ru.will0376.cases.model.ModelItemCase;
+import ru.imine.cases.Rolling;
+import ru.imine.cases.model.ModelItemCase;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;

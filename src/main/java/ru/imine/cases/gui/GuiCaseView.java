@@ -1,4 +1,4 @@
-package ru.will0376.cases.gui;
+package ru.imine.cases.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -9,12 +9,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
-import ru.will0376.cases.ColorHelper;
-import ru.will0376.cases.Strings;
-import ru.will0376.cases.model.ModelGuiCase;
-import ru.will0376.cases.network.PacketsDecoder;
-import ru.will0376.cases.network.Recieve;
-import ru.will0376.cases.pojo.CaseItem;
+import ru.imine.cases.ColorHelper;
+import ru.imine.cases.Strings;
+import ru.imine.cases.model.ModelGuiCase;
+import ru.imine.cases.network.PacketsDecoder;
+import ru.imine.cases.network.Recieve;
+import ru.imine.cases.pojo.CaseItem;
 
 import java.awt.*;
 import java.util.List;

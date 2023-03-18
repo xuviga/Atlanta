@@ -1,4 +1,4 @@
-package ru.will0376.cases;
+package ru.imine.cases;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;

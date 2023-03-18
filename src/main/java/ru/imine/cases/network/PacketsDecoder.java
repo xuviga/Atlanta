@@ -1,9 +1,9 @@
-package ru.will0376.cases.network;
+package ru.imine.cases.network;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import ru.will0376.cases.pojo.Case;
-import ru.will0376.cases.pojo.CaseItem;
+import ru.imine.cases.pojo.Case;
+import ru.imine.cases.pojo.CaseItem;
 
 import java.util.ArrayList;
 import java.util.Collections;

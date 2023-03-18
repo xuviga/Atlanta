@@ -1,4 +1,4 @@
-package ru.will0376.cases.pojo;
+package ru.imine.cases.pojo;
 
 public class Case {
 	private String name;

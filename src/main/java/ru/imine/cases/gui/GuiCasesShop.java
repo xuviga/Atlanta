@@ -1,12 +1,12 @@
-package ru.will0376.cases.gui;
+package ru.imine.cases.gui;
 
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import ru.will0376.cases.Strings;
-import ru.will0376.cases.network.PacketsDecoder;
-import ru.will0376.cases.pojo.Case;
+import ru.imine.cases.Strings;
+import ru.imine.cases.network.PacketsDecoder;
+import ru.imine.cases.pojo.Case;
 
 import java.io.IOException;
 
