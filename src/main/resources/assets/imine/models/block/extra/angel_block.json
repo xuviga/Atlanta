@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "imine:blocks/extra/angel_block"
+    }
+}

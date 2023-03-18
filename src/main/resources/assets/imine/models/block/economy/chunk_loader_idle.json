@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "imine:blocks/economy/chunk_loader_idle_top",
+        "down": "imine:blocks/economy/chunk_loader_idle_top",
+        "up": "imine:blocks/economy/chunk_loader_idle_top",
+        "north": "imine:blocks/economy/chunk_loader_idle_side",
+        "east": "imine:blocks/economy/chunk_loader_idle_side",
+        "south": "imine:blocks/economy/chunk_loader_idle_side",	
+        "west": "imine:blocks/economy/chunk_loader_idle_side"
+    }
+}

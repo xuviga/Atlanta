@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "active=false": { "model": "imine:economy/chunk_loader_idle" },
+        "active=true": { "model": "imine:economy/chunk_loader_active" }
+    }
+}

@@ -1,0 +1,16 @@
+[
+{
+    "modid": "imine",
+    "name": "iMine",
+    "description": ":kappa:",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": ["DaNetNavern0"],
+    "credits": "DaNetNavern0",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": [ "thermalexpansion","rftools","enderio","cofhcore","nei" ]
+}
+]

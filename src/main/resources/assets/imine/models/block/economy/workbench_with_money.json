@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "imine:blocks/economy/workbench_with_money_front",
+        "down": "imine:blocks/economy/workbench_with_money_bottom",
+        "up": "imine:blocks/economy/workbench_with_money_top",
+        "north": "imine:blocks/economy/workbench_with_money_front",
+        "east": "imine:blocks/economy/workbench_with_money_side",
+        "south": "imine:blocks/economy/workbench_with_money_side",	
+        "west": "imine:blocks/economy/workbench_with_money_front"
+    }
+}

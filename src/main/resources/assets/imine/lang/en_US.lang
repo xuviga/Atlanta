@@ -1,0 +1,42 @@
+tooltip.tool.hold_shift=Зажми §eShift§7 для подробностей§r
+tooltip.tool.limit_count=%s%s§7/%s%s§r
+tooltip.tool.limit_desc=На этот блок установлен лимит
+
+//Экономика
+jei.craft_with_money.title=iCrafting
+jei.coin_tab.info=Economy System
+item.coin.name=iMine Coins
+item.coin.info=Тут мы описываем\nЧто на сервере есть монетки\nИ зачем они нужны
+gui.craft_with_money.info_tab.0=Дратути
+gui.craft_with_money.info_tab.1=Ты тут торт
+tile.workbench_with_money.name=Золотой Верстак
+tile.workbench_with_money.desc=Позволяет использовать монетки в крафте
+tile.chunk_loader.name=Загрузчик Чанков
+tile.chunk_loader.desc=Загружает зону 3х3 чанка вокруг себя, пока один из владельцев онлайн. Если один из владельцев имеет ранг §bDIAMOND§7, работает 24 часа после выхода всех владельцев
+
+//Смайлики
+item.smile_case_normal.name=Emoticon Case
+item.smile_case_rare.name=§9Rare Emoticon Case§r
+item.smile_case_epic.name=§5Epic Emoticon Case§r
+item.smile_case_normal.desc=Contains 2 Normal emoticons
+item.smile_case_rare.desc=Contains 3 emoticons, at least 1 is §9Rare§r
+item.smile_case_epic.desc=Contains 3 emoticons, at least 1 is §5Epic§r
+
+//Торговые лавки
+gui.trade_booth_top.owner.info_tab.0=Дратути
+gui.trade_booth_top.owner.info_tab.1=Ты тут торт
+gui.trade_booth_storage.name=Хранилище торговой лавки
+gui.trade_booth_top.owner.name=Твоя торговая лавка
+gui.trade_booth_top.customer.name_admin=Админская торговая лавка
+gui.trade_booth_top.customer.name=Торговая лавка %s
+tile.trade_booth_storage_oak.name=Oak Trade Booth
+tile.trade_booth_storage_spruce.name=Spruce Trade Booth
+tile.trade_booth_storage_birch.name=Birch Trade Booth
+tile.trade_booth_storage_jungle.name=Jungle Trade Booth
+tile.trade_booth.withitems=(With items)
+tile.trade_booth.configured=(Configured)
+tile.trade_booth_top_oak.name=Oak Trade Booth (Top)
+tile.trade_booth_top_spruce.name=Spruce Trade Booth (Top)
+tile.trade_booth_top_birch.name=Birch Trade Booth (Top)
+tile.trade_booth_top_jungle.name=Jungle Trade Booth (Top)
+tile.trade_booth_admin.name=Admin Trade Booth

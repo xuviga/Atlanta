@@ -1,0 +1,99 @@
+import proguard.gradle.ProGuardTask
+
+buildscript {
+    repositories {
+		flatDir dirs: 'proguard/proguard6.0.3/lib'
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "https://maven.minecraftforge.net/"
+        }       
+		maven {
+            name = "github"
+            url = "https://github.com/juanmuscaria/maven/raw/master"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle2:[2.3-1.0.0-SNAPSHOT,)'
+		classpath ':proguard:'
+    }
+}
+
+repositories {
+	flatDir {
+		dirs 'deps'
+	}
+}
+
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+group= "iMine"
+def name = "iMine"
+archivesBaseName = "../unobfuscated/${name}"
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+	version = "1.12.2-14.23.5.2847"
+    mappings = "stable_39"
+	runDir = "eclipse"
+    
+	replace '@VERSION@', project.version
+	// makeObfSourceJar = false
+}
+
+dependencies {
+	compile name: 'CodeChickenLib_1.12.2_3.2.3.358_universal'
+	compile name: 'CoFHCore-1.12.2-4.6.6.1-universal'
+	compile name: 'CraftTweaker2-1.12-4.1.20.574'
+	compile name: 'fastjson-1.2.51'
+	compile name: 'jei_atlanta'
+	compile name: 'LuckPerms-Bukkit-5.1.87'
+	compile name: 'Mohist-1.12.2-8ad9a5f-server'
+	compile name: 'netty-all-4.1.56.Final'
+	compile name: 'RedstoneFlux-1.12-2.1.1.1-universal'
+}
+
+task client(type: Jar) {
+	baseName = "../unobfuscated/iMine-Client"
+	//baseName = "iMine-Client"
+
+	from(zipTree("build/unobfuscated/iMine.jar")) {
+		include "ru/imine/client/**"
+		include "ru/imine/shared/**"
+		include "ru/imine/version/client/**"
+		include "ru/imine/version/shared/**"
+		include "mcmod.info"
+		include "META-INF/imine_at.cfg"
+		include "assets/**"
+	}
+
+	manifest {
+		attributes 'FMLAT': 'imine_at.cfg'
+	}
+}
+
+task server(type: Jar) {
+	baseName = "../unobfuscated/iMine-Server"
+	//baseName = "iMine-Server"
+
+	from(zipTree("build/unobfuscated/iMine.jar")) {
+		include "ru/imine/server/**"
+		include "ru/imine/shared/**"
+		include "ru/imine/version/server/**"
+		include "ru/imine/version/shared/**"
+		include "META-INF/imine_at.cfg"
+		include "mcmod.info"
+	}
+
+	manifest {
+		attributes 'FMLAT': 'imine_at.cfg'
+	}
+}
+
+
+build.finalizedBy('server')
+build.finalizedBy('client')

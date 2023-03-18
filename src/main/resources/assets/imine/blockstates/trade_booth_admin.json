@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "skin=wood":  { "model": "imine:trade_booth/trade_booth_admin_wood" },
+        "skin=iron":   { "model": "iron_block" }
+    }
+}

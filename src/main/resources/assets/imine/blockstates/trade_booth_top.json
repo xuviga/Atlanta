@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "skin=oak":  { "model": "imine:trade_booth/trade_booth_top_oak" },
+        "skin=spruce":   { "model": "imine:trade_booth/trade_booth_top_spruce" },
+        "skin=birch":   { "model": "imine:trade_booth/trade_booth_top_birch" },
+        "skin=jungle":   { "model": "imine:trade_booth/trade_booth_top_jungle" }
+    }
+}

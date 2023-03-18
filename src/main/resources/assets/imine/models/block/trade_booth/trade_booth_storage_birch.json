@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "imine:blocks/trade_booth/trade_booth_storage_birch"
+    }
+}

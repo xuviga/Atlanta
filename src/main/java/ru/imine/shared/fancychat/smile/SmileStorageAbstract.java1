@@ -1,0 +1,19 @@
+package ru.imine.shared.fancychat.smile;
+
+import ru.imine.shared.util.Rarity;
+
+import java.util.List;
+
+public abstract class SmileStorageAbstract
+{
+    public static SmileStorageAbstract instance;
+
+    public abstract Category getCategoryByName(String name);
+
+    public abstract List<Category> getAllCategories();
+
+    public abstract Smile getSmile(String catetory, String name);
+
+    public abstract List<Smile> getAllSmiles();
+    public abstract List<Smile> getAllSmilesByRatity(Rarity rarity);
+}
