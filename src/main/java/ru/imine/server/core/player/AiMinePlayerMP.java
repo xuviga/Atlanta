@@ -23,6 +23,7 @@ import ru.imine.shared.fancychat.packet.FCPacket0ChatMessage;
 import ru.imine.shared.util.Discord;
 import ru.imine.shared.util.Location;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,14 +73,21 @@ public class AiMinePlayerMP
     @Deprecated
     public static AiMinePlayerMP addFromHere(PlayerEvent.PlayerLoggedInEvent event)
     {
+        // Create a new AiMinePlayerMP object
         AiMinePlayerMP player = new AiMinePlayerMP();
+        // Set the UUID of the player to the UUID of the logged-in player
         player.uuid = event.player.getUniqueID();
+        // If player authentication is successfully loaded from the database
         if (player.loadPlayerAuth())
         {
+            // Set the entity of the player to the logged-in player
             player.entity = (EntityPlayerMP) event.player;
+            // Add the player to the thread-safe players map with their playerId as the key
             players.put(player.playerId, player);
+            // Return the added player object
             return player;
         }
+        // If player authentication could not be loaded, return null
         return null;
     }
 
@@ -140,21 +148,17 @@ public class AiMinePlayerMP
         return null;
     }
 
-    public static UUID getUUID(long uuid)
-    {
-        try
-        {
-            List<Row> rows = new ArrayList<>();
-            if (uuid != 0)
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT `uuid` FROM `users` WHERE `id`=?", uuid);
-            if (rows.size() == 0)
-                throw new IllegalArgumentException("Игрок #" + uuid + " не найден.");
+    public static UUID getUUID(long playerId) {
+        try {
+            List<Row> rows = MySQL.getGlobalDataSQL().querySQL("SELECT `uuid` FROM `users` WHERE `id`=?", playerId);
+            if (rows.isEmpty()) {
+                throw new IllegalArgumentException("Player #" + playerId + " not found.");
+            }
             return UUID.fromString(rows.get(0).getString(1));
-        }
-        catch (Exception e)
-        {
-            AiMine.LOGGER.error("Мускуль сломался пока получали uuid для игрока #"+uuid, e);
-            Discord.instance.sendErrorLog("iMineCore", "Мускуль сломался пока получали ууид для игрока #"+uuid, e);
+        } catch (SQLException e) {
+            String errorMessage = "Failed to get UUID for player #" + playerId;
+            AiMine.LOGGER.error(errorMessage, e);
+            Discord.instance.sendErrorLog("iMineCore", errorMessage, e);
             throw new RuntimeException(e);
         }
     }
@@ -173,20 +177,26 @@ public class AiMinePlayerMP
     {
     }
 
-    protected boolean loadPlayerAuth()
-    {
-        List<Row> rows = new ArrayList<>();
+    protected boolean loadPlayerAuth(Connection connection) {
         try {
+            // Create a list to store the rows returned by the query
+            List<Row> rows = new ArrayList<>();
+
+            // Execute the appropriate query based on the available information
             if (playerId != 0) {
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `id`=?", playerId);
+                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `id`=?", playerId);
             } else if (uuid != null) {
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
-            } else if (name != null && !name.isEmpty()) {
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
+                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
+            } else if (!name.isEmpty()) {
+                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `username`=?", name);
             }
+
+            // If no rows were returned, the player could not be found
             if (rows.isEmpty()) {
                 return false;
             }
+
+            // Otherwise, populate the player object with the information from the row
             Row row = rows.get(0);
             playerId = row.getLong("id");
             uuid = UUID.fromString(row.getString("uuid"));
@@ -206,13 +216,14 @@ public class AiMinePlayerMP
             storage = new PlayerStorageProxy(playerId);
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AiMine.LOGGER.error("Ошибка при загрузке данных игрока", e);
+            Discord.instance.sendErrorLog("iMineCore", "Ошибка при загрузке данных игрока", e);
+        } catch (Exception e) {
+            AiMine.LOGGER.error("Ошибка при загрузке данных игрока", e);
+            Discord.instance.sendErrorLog("iMineCore", "Ошибка при загрузке данных игрока", e);
         }
-        catch (Exception e)
-        {
-            Discord.instance.sendErrorLog("1", "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ПОЛЬЗОВАТЕЛЯ НАХУЙ СУКА", e);
-            return false;
-        }
+
+        // If there was an exception, return false to indicate that the player could not be loaded
         return false;
     }
 
