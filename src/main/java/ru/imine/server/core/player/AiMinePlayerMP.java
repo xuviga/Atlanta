@@ -181,7 +181,7 @@ public class AiMinePlayerMP
             if (playerId != 0)
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `id`=?", playerId);
             else if (uuid != null)
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=? AND DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i:%s') <> '0000-00-00 00:00:00'", uuid.toString());
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=? AND DATE_FORMAT(`created_at`, '%Y-%m-%d %H:%i:%s') <> '0000-00-00 00:00:00'", uuid.toString());
             else if (name != null && !name.isEmpty())
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
             if (rows.size() == 0);
