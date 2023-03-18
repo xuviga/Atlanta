@@ -153,6 +153,9 @@ public class MySQL
                 Object object = resultSet.getObject(i);
                 if (object!=null)
                 {
+                    if (metaData.getColumnTypeName(i).equals("DATETIME") && object.toString().equals("0000-00-00 00:00:00")) {
+                        object = null;
+                    }
                     row.data_int.put(i, object);
                     row.data.put(metaData.getColumnName(i), object);
                 }

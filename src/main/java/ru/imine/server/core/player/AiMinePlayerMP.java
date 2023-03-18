@@ -57,7 +57,7 @@ public class AiMinePlayerMP
                     "  `balance_real` bigint(20) NOT NULL DEFAULT '0'," +
                     "  `NickColor` varchar(11) NULL," +
                     "  `ChatColor` varchar(11) NULL," +
-                    "  PRIMARY KEY (`nickname`)" +
+                    "  PRIMARY KEY (`username`)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
         }
         catch (Exception e)
