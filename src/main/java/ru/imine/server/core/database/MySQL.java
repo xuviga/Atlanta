@@ -125,7 +125,7 @@ public class MySQL
                 }
             }
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8");
+            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8&useSSL=false");
             return connection;
         }
     }
@@ -138,34 +138,7 @@ public class MySQL
     {
         PreparedStatement statement = prepare(str, args);
         ResultSet resultSet = statement.executeQuery();
-
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int columns = metaData.getColumnCount();
-
         List<Row> result = new ArrayList<>();
-
-        while (resultSet.next())
-        {
-            Row row = new Row();
-            boolean skipRow = false;
-            result.add(row);
-            for(int i = 1; i <= columns; i++)
-            {
-                Object object = resultSet.getObject(i);
-                if (metaData.getColumnName(i).equals("created_at") && object != null && object.toString().equals("0000-00-00 00:00:00")) {
-                    skipRow = true;
-                    break;
-                }
-                if (object!=null)
-                {
-                    row.data_int.put(i, object);
-                    row.data.put(metaData.getColumnName(i), object);
-                }
-            }
-            if (!skipRow) {
-                result.add(row);
-            }
-        }
         statement.close();
         resultSet.close();
         return result;
