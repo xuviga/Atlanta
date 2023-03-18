@@ -147,18 +147,23 @@ public class MySQL
         while (resultSet.next())
         {
             Row row = new Row();
+            boolean skipRow = false;
             result.add(row);
             for(int i = 1; i <= columns; i++)
             {
                 Object object = resultSet.getObject(i);
+                if (metaData.getColumnName(i).equals("created_at") && object != null && object.toString().equals("0000-00-00 00:00:00")) {
+                    skipRow = true;
+                    break;
+                }
                 if (object!=null)
                 {
-                    if (metaData.getColumnTypeName(i).equals("DATETIME") && object.toString().equals("0000-00-00 00:00:00")) {
-                        object = null;
-                    }
                     row.data_int.put(i, object);
                     row.data.put(metaData.getColumnName(i), object);
                 }
+            }
+            if (!skipRow) {
+                result.add(row);
             }
         }
         statement.close();
