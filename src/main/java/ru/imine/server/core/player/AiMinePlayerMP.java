@@ -23,7 +23,6 @@ import ru.imine.shared.fancychat.packet.FCPacket0ChatMessage;
 import ru.imine.shared.util.Discord;
 import ru.imine.shared.util.Location;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,8 +51,7 @@ public class AiMinePlayerMP
     {
         try
         {
-            tablename = AiMineCore.getServerName();
-            MySQL.getGameDataSQL().updateSQL("CREATE TABLE IF NOT EXISTS `"+tablename+"` (" +
+            MySQL.getGameDataSQL().updateSQL("CREATE TABLE IF NOT EXISTS `users` (" +
                     "  `username` bigint(20) unsigned NOT NULL," +
                     "  `balance_real` bigint(20) NOT NULL DEFAULT '0'," +
                     "  `NickColor` varchar(11) NULL," +
@@ -63,8 +61,8 @@ public class AiMinePlayerMP
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
-            Discord.instance.sendErrorLog("iMineCore", "Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
+            AiMine.LOGGER.error("Failed to create table to store playerdata. TableName=`users`. Shutdown!", e);
+            Discord.instance.sendErrorLog("iMineCore", "Failed to create table to store playerdata. TableName=`users`. Shutdown!", e);
 
             FMLCommonHandler.instance().exitJava(1, false);
         }
@@ -73,21 +71,14 @@ public class AiMinePlayerMP
     @Deprecated
     public static AiMinePlayerMP addFromHere(PlayerEvent.PlayerLoggedInEvent event)
     {
-        // Create a new AiMinePlayerMP object
         AiMinePlayerMP player = new AiMinePlayerMP();
-        // Set the UUID of the player to the UUID of the logged-in player
         player.uuid = event.player.getUniqueID();
-        // If player authentication is successfully loaded from the database
-        if (player.loadPlayerAuth((Connection) player))
+        if (player.loadPlayerAuth())
         {
-            // Set the entity of the player to the logged-in player
             player.entity = (EntityPlayerMP) event.player;
-            // Add the player to the thread-safe players map with their playerId as the key
             players.put(player.playerId, player);
-            // Return the added player object
             return player;
         }
-        // If player authentication could not be loaded, return null
         return null;
     }
 
@@ -124,58 +115,45 @@ public class AiMinePlayerMP
         return players.values().stream().filter(it -> it.name.equalsIgnoreCase(username)).findFirst().orElse(null);
     }
 
-    public static AiMinePlayerMP getOffline(String name) {
+    public static AiMinePlayerMP getOffline(String name)
+    {
         AiMinePlayerMP player = get(name);
-        if (player != null) {
+        if (player!=null)
             return player;
-        }
         player = new AiMinePlayerMP();
         player.name = name;
-        if (player.loadPlayerAuth((Connection) player)) {
-            // Player data loaded successfully, return the new player object
-            players.put(player.playerId, player); // Make sure to add the new player object to the thread-safe players map
+        if (player.loadPlayerAuth())
             return player;
-        }
         return null;
     }
 
-    /**
-     * Returns an offline player with the specified player ID. If the player is already loaded, returns the loaded player,
-     * otherwise creates a new player object and loads the player data from the database.
-     *
-     * @param playerId the ID of the player to retrieve
-     * @return an AiMinePlayerMP object representing the offline player, or null if the player was not found
-     */
     public static AiMinePlayerMP getOffline(long playerId)
     {
         AiMinePlayerMP player = get(playerId);
-        if (player != null) {
-            // Player is already loaded, return the existing player object
+        if (player!=null)
             return player;
-        }
-        // Player is not loaded, create a new player object and load the player data from the database
         player = new AiMinePlayerMP();
         player.playerId = playerId;
-        if (player.loadPlayerAuth((Connection) player)) {
-            // Player data loaded successfully, return the new player object
-            players.put(player.playerId, player); // Make sure to add the new player object to the thread-safe players map
+        if (player.loadPlayerAuth())
             return player;
-        }
-        // Player data not found in the database, return null
         return null;
     }
 
-    public static UUID getUUID(long playerId) {
-        try {
-            List<Row> rows = MySQL.getGlobalDataSQL().querySQL("SELECT `uuid` FROM `users` WHERE `id`=?", playerId);
-            if (rows.isEmpty()) {
-                throw new IllegalArgumentException("Player #" + playerId + " not found.");
-            }
+    public static UUID getUUID(long uuid)
+    {
+        try
+        {
+            List<Row> rows = new ArrayList<>();
+            if (uuid != 0)
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT `uuid` FROM `users` WHERE `id`=?", uuid);
+            if (rows.size() == 0)
+                throw new IllegalArgumentException("Игрок #" + uuid + " не найден.");
             return UUID.fromString(rows.get(0).getString(1));
-        } catch (SQLException e) {
-            String errorMessage = "Failed to get UUID for player #" + playerId;
-            AiMine.LOGGER.error(errorMessage, e);
-            Discord.instance.sendErrorLog("iMineCore", errorMessage, e);
+        }
+        catch (Exception e)
+        {
+            AiMine.LOGGER.error("Мускуль сломался пока получали uuid для игрока #"+uuid, e);
+            Discord.instance.sendErrorLog("iMineCore", "Мускуль сломался пока получали ууид для игрока #"+uuid, e);
             throw new RuntimeException(e);
         }
     }
@@ -194,30 +172,25 @@ public class AiMinePlayerMP
     {
     }
 
-    protected boolean loadPlayerAuth(Connection connection) {
-        try {
-            // Create a list to store the rows returned by the query
-            List<Row> rows = new ArrayList<>();
-
-            // Execute the appropriate query based on the available information
-            if (playerId != 0) {
-                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `id`=?", playerId);
-            } else if (uuid != null) {
-                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
-            } else if (!name.isEmpty()) {
-                rows = MySQL.getGlobalDataSQL().querySQL(String.valueOf(connection), "SELECT * FROM `users` WHERE `username`=?", name);
-            }
-
-            // If no rows were returned, the player could not be found
-            if (rows.isEmpty()) {
-                return false;
-            }
-
-            // Otherwise, populate the player object with the information from the row
+    protected boolean loadPlayerAuth()
+    {
+        List<Row> rows = new ArrayList<>();
+        try
+        {
+            if (playerId != 0)
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `id`=?", playerId);
+            else if (uuid != null)
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
+            else if (name != null && !name.isEmpty())
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
             Row row = rows.get(0);
             playerId = row.getLong("id");
             uuid = UUID.fromString(row.getString("uuid"));
             name = row.getString("username");
+            String hwUuidStr = row.getString("hwidId");
+            hwUuid = hwUuidStr==null ? null : UUID.fromString(hwUuidStr);
+            String clientSeedStr = row.getString("client_seed");
+            clientSeed = clientSeedStr==null ? null : UUID.fromString(clientSeedStr);
             playerRank = PlayerRank.DEFAULT;
             playerRole = PlayerRole.DEFAULT;
             for (PlayerRank value : PlayerRank.values()) {
@@ -232,18 +205,13 @@ public class AiMinePlayerMP
             }
             storage = new PlayerStorageProxy(playerId);
             return true;
-        } catch (SQLException e) {
-            AiMine.LOGGER.error("Ошибка при загрузке данных игрока", e);
-            Discord.instance.sendErrorLog("iMineCore", "Ошибка при загрузке данных игрока", e);
-        } catch (Exception e) {
-            AiMine.LOGGER.error("Ошибка при загрузке данных игрока", e);
-            Discord.instance.sendErrorLog("iMineCore", "Ошибка при загрузке данных игрока", e);
         }
-
-        // If there was an exception, return false to indicate that the player could not be loaded
-        return false;
+        catch (Exception e)
+        {
+            Discord.instance.sendErrorLog("1", "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ПОЛЬЗОВАТЕЛЯ НАХУЙ СУКА", e);
+            return false;
+        }
     }
-
 
     public boolean hasRank(PlayerRank rank)
     {
@@ -346,8 +314,8 @@ public class AiMinePlayerMP
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName " + tablename, e);
-            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName " + tablename, e);
+            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName " + name, e);
+            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName " + name, e);
 
             if (entity!=null)
                 sendMessage("§cПроизошел сбой в работе системы монет. Повтори операцию позже.");
