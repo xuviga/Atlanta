@@ -125,7 +125,7 @@ public class MySQL
                 }
             }
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8&useSSL=false");
+            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8");
             return connection;
         }
     }
@@ -138,7 +138,25 @@ public class MySQL
     {
         PreparedStatement statement = prepare(str, args);
         ResultSet resultSet = statement.executeQuery();
+
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columns = metaData.getColumnCount();
+
         List<Row> result = new ArrayList<>();
+
+        while (resultSet.next())
+        {
+            Row row = new Row();
+            result.add(row);
+            for(int i = 1; i <= columns; i++)
+            {
+                Object object = resultSet.getObject(i);
+                if (object!=null)
+                {
+                    row.data_int.put(i, object);
+                }
+            }
+        }
         statement.close();
         resultSet.close();
         return result;
