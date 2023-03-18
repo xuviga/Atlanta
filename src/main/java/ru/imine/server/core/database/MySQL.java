@@ -20,7 +20,7 @@ public class MySQL
     private static MySQL globalData;
     private static MySQL gameData;
 
-    private File dataFolder;
+    private final File dataFolder;
     private Connection connection;
 
     private String user;
@@ -134,26 +134,25 @@ public class MySQL
         return connection;
     }
 
-    public List<Row> querySQL(String str, Object... args) throws SQLException
-    {
+    public List<Row> querySQL(String str, Object... args) throws SQLException {
         PreparedStatement statement = prepare(str, args);
         ResultSet resultSet = statement.executeQuery();
-
         ResultSetMetaData metaData = resultSet.getMetaData();
         int columns = metaData.getColumnCount();
-
         List<Row> result = new ArrayList<>();
 
-        while (resultSet.next())
-        {
+        while (resultSet.next()) {
             Row row = new Row();
             result.add(row);
-            for(int i = 1; i <= columns; i++)
-            {
+            for (int i = 1; i <= columns; i++) {
                 Object object = resultSet.getObject(i);
-                if (object!=null)
-                {
-                    row.data_int.put(i, object);
+                if (object != null) {
+                    if (object instanceof Timestamp && ((Timestamp) object).getTime() == 0) {
+                        row.data.put(metaData.getColumnName(i), null);
+                    } else {
+                        row.data_int.put(i, object);
+                        row.data.put(metaData.getColumnName(i), object);
+                    }
                 }
             }
         }
