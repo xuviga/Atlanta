@@ -101,9 +101,9 @@ public class MySQL
         {
             Class.forName("com.mysql.jdbc.Driver");
             if (AiMineCore.isTest())
-                connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/" + this.database+"?characterEncoding=utf-8&serverTimezone=GMT", this.user, null);
+                connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/" + this.database+"?characterEncoding=utf-8&serverTimezone=GMT&?zeroDateTimeBehavior=convertToNull", this.user, null);
             else
-                connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/" + this.database+"?characterEncoding=utf-8&serverTimezone="+ TimeZone.getDefault().getID(), this.user, this.password);
+                connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/" + this.database+"?characterEncoding=utf-8&?zeroDateTimeBehavior=convertToNull&serverTimezone="+ TimeZone.getDefault().getID(), this.user, this.password);
             return connection;
         }
         else
@@ -125,7 +125,7 @@ public class MySQL
                 }
             }
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8");
+            connection = DriverManager.getConnection("jdbc:sqlite:" +dataFolder.toPath().toString() + "/" + dbLocation+".db?autoReconnect=true&characterEncoding=utf-8&?zeroDateTimeBehavior=convertToNull");
             return connection;
         }
     }
