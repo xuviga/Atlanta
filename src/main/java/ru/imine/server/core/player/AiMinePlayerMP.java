@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 public class AiMinePlayerMP
 {
+    private static String tablename;
     private static final Map<Long, AiMinePlayerMP> players = new ConcurrentHashMap<>();
 
     protected long playerId;
@@ -45,6 +46,28 @@ public class AiMinePlayerMP
 
     protected EntityPlayerMP entity;
     protected PlayerStorageProxy storage;
+
+    static
+    {
+        try
+        {
+            tablename = AiMineCore.getServerName();
+            MySQL.getGameDataSQL().updateSQL("CREATE TABLE IF NOT EXISTS `"+tablename+"` (" +
+                    "  `username` bigint(20) unsigned NOT NULL," +
+                    "  `balance_real` bigint(20) NOT NULL DEFAULT '0'," +
+                    "  `NickColor` varchar(11) NULL," +
+                    "  `ChatColor` varchar(11) NULL," +
+                    "  PRIMARY KEY (`nickname`)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+        }
+        catch (Exception e)
+        {
+            AiMine.LOGGER.error("Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
+            Discord.instance.sendErrorLog("iMineCore", "Failed to create table to store playerdata. TableName=`" + tablename + "`. Shutdown!", e);
+
+            FMLCommonHandler.instance().exitJava(1, false);
+        }
+    }
 
     @Deprecated
     public static AiMinePlayerMP addFromHere(PlayerEvent.PlayerLoggedInEvent event)
@@ -158,7 +181,7 @@ public class AiMinePlayerMP
             if (playerId != 0)
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `id`=?", playerId);
             else if (uuid != null)
-                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
+                rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=? AND DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i:%s') <> '0000-00-00 00:00:00'", uuid.toString());
             else if (name != null && !name.isEmpty())
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
             if (rows.size() == 0);
@@ -166,10 +189,6 @@ public class AiMinePlayerMP
             playerId = row.getLong("id");
             uuid = UUID.fromString(row.getString("uuid"));
             name = row.getString("username");
-            String hwUuidStr = row.getString("hwidId");
-            hwUuid = hwUuidStr==null ? null : UUID.fromString(hwUuidStr);
-            String clientSeedStr = row.getString("client_seed");
-            clientSeed = clientSeedStr==null ? null : UUID.fromString(clientSeedStr);
             playerRank = PlayerRank.DEFAULT;
             playerRole = PlayerRole.DEFAULT;
             for (PlayerRank value : PlayerRank.values()) {
@@ -293,8 +312,8 @@ public class AiMinePlayerMP
         }
         catch (Exception e)
         {
-            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName ", e);
-            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName ", e);
+            AiMine.LOGGER.error("Failed to get " + name + "'s money from table. TableName " + tablename, e);
+            Discord.instance.sendErrorLog("1", "Failed to get " + name + "'s money from table. TableName " + tablename, e);
 
             if (entity!=null)
                 sendMessage("§cПроизошел сбой в работе системы монет. Повтори операцию позже.");

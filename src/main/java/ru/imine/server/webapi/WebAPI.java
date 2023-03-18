@@ -27,7 +27,6 @@ public class WebAPI
 
     public static void preInit(FMLPreInitializationEvent e)
     {
-        httpListener = new HttpListener(AiMineCore.getConfig().getJSONObject("settings").getInteger("web_api_port"));
         sqlListener = new MySQLListener();
     }
 
