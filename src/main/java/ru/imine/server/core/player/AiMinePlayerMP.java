@@ -176,15 +176,17 @@ public class AiMinePlayerMP
     protected boolean loadPlayerAuth()
     {
         List<Row> rows = new ArrayList<>();
-        try
-        {
-            if (playerId != 0)
+        try {
+            if (playerId != 0) {
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `id`=?", playerId);
-            else if (uuid != null)
+            } else if (uuid != null) {
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `uuid`=?", uuid.toString());
-            else if (name != null && !name.isEmpty())
+            } else if (name != null && !name.isEmpty()) {
                 rows = MySQL.getGlobalDataSQL().querySQL("SELECT * FROM `users` WHERE `username`=?", name);
-            if (rows.size() == 0);
+            }
+            if (rows.isEmpty()) {
+                return false;
+            }
             Row row = rows.get(0);
             playerId = row.getLong("id");
             uuid = UUID.fromString(row.getString("uuid"));
@@ -203,13 +205,17 @@ public class AiMinePlayerMP
             }
             storage = new PlayerStorageProxy(playerId);
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         catch (Exception e)
         {
             Discord.instance.sendErrorLog("1", "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ПОЛЬЗОВАТЕЛЯ НАХУЙ СУКА", e);
             return false;
         }
+        return false;
     }
+
 
     public boolean hasRank(PlayerRank rank)
     {
