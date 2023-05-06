@@ -1,0 +1,881 @@
+package mekanism.common.block;
+
+import net.minecraft.block.*;
+import mekanism.client.render.*;
+import net.minecraft.block.material.*;
+import net.minecraft.creativetab.*;
+import mekanism.common.item.*;
+import mekanism.common.multiblock.*;
+import net.minecraft.tileentity.*;
+import net.minecraft.client.renderer.texture.*;
+import cpw.mods.fml.relauncher.*;
+import mekanism.common.content.boiler.*;
+import net.minecraft.item.*;
+import cpw.mods.fml.common.*;
+import net.minecraft.entity.item.*;
+import buildcraft.api.tools.*;
+import net.minecraftforge.common.util.*;
+import net.minecraft.entity.player.*;
+import mekanism.common.content.tank.*;
+import net.minecraftforge.fluids.*;
+import mekanism.common.*;
+import net.minecraft.entity.*;
+import net.minecraft.util.*;
+import net.minecraft.world.*;
+import mekanism.common.inventory.*;
+import mekanism.common.base.*;
+import mekanism.api.energy.*;
+import java.util.*;
+import mekanism.api.*;
+import mekanism.common.util.*;
+import mekanism.common.tile.*;
+
+public class BlockBasic extends Block implements IBlockCTM, MekanismRenderer.ICustomBlockIcon
+{
+    public IIcon[][] icons;
+    public IIcon[][] binIcons;
+    public CTMData[][] ctms;
+    public static String ICON_BASE;
+    public BasicBlock blockType;
+    
+    public BlockBasic(final BasicBlock type) {
+        super(Material.iron);
+        this.icons = new IIcon[16][16];
+        this.binIcons = new IIcon[16][16];
+        this.ctms = new CTMData[16][4];
+        this.setHardness(5.0f);
+        this.setResistance(20.0f);
+        this.setCreativeTab((CreativeTabs)Mekanism.tabMekanism);
+        this.blockType = type;
+    }
+    
+    public IIcon getIcon(final ItemStack stack, final int side) {
+        if (BasicType.get(stack) == BasicType.BIN) {
+            return this.binIcons[((ItemBlockBasic)stack.getItem()).getBaseTier(stack).ordinal()][side];
+        }
+        if (BasicType.get(stack) == BasicType.INDUCTION_CELL) {
+            return this.icons[3][((ItemBlockBasic)stack.getItem()).getBaseTier(stack).ordinal()];
+        }
+        if (BasicType.get(stack) == BasicType.INDUCTION_PROVIDER) {
+            return this.icons[4][((ItemBlockBasic)stack.getItem()).getBaseTier(stack).ordinal()];
+        }
+        return this.getIcon(side, stack.getItemDamage());
+    }
+    
+    public void onNeighborBlockChange(final World world, final int x, final int y, final int z, final Block block) {
+        if (!world.isRemote) {
+            final TileEntity tileEntity = world.getTileEntity(x, y, z);
+            if (block == this && tileEntity instanceof IMultiblock) {
+                ((IMultiblock)tileEntity).update();
+            }
+            if (tileEntity instanceof TileEntityBasicBlock) {
+                ((TileEntityBasicBlock)tileEntity).onNeighborChange(block);
+            }
+            if (tileEntity instanceof IStructuralMultiblock) {
+                ((IStructuralMultiblock)tileEntity).update();
+            }
+        }
+    }
+    
+    public float getExplosionResistance(final Entity entity, final World world, final int x, final int y, final int z, final double explosionX, final double explosionY, final double explosionZ) {
+        final BasicType type = BasicType.get(this, world.getBlockMetadata(x, y, z));
+        if (type == BasicType.REFINED_OBSIDIAN) {
+            return 4000.0f;
+        }
+        return this.blockResistance;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public void registerBlockIcons(final IIconRegister register) {
+        switch (this.blockType) {
+            case BASIC_BLOCK_1: {
+                this.ctms[7][0] = new CTMData("ctm/TeleporterFrame", this, Arrays.asList(7)).addOtherBlockConnectivities(MekanismBlocks.MachineBlock, Arrays.asList(11)).registerIcons(register);
+                this.ctms[9][0] = new CTMData("ctm/DynamicTank", this, Arrays.asList(9, 11)).registerIcons(register);
+                this.ctms[10][0] = new CTMData("ctm/StructuralGlass", this, Arrays.asList(10)).registerIcons(register);
+                this.ctms[11][0] = new CTMData("ctm/DynamicValve", this, Arrays.asList(11, 9)).registerIcons(register);
+                this.ctms[14][0] = new CTMData("ctm/ThermalEvaporationBlock", this, Arrays.asList(14, 15)).addOtherBlockConnectivities(MekanismBlocks.BasicBlock2, Arrays.asList(0)).addFacingOverride("ctm/ThermalEvaporationController").registerIcons(register);
+                this.ctms[14][1] = new CTMData("ctm/ThermalEvaporationBlock", this, Arrays.asList(14, 15)).addOtherBlockConnectivities(MekanismBlocks.BasicBlock2, Arrays.asList(0)).addFacingOverride("ctm/ThermalEvaporationControllerOn").registerIcons(register);
+                this.ctms[15][0] = new CTMData("ctm/ThermalEvaporationValve", this, Arrays.asList(15, 14)).addOtherBlockConnectivities(MekanismBlocks.BasicBlock2, Arrays.asList(0)).registerIcons(register);
+                this.icons[0][0] = register.registerIcon("mekanism:OsmiumBlock");
+                this.icons[1][0] = register.registerIcon("mekanism:BronzeBlock");
+                this.icons[2][0] = register.registerIcon("mekanism:RefinedObsidian");
+                this.icons[3][0] = register.registerIcon("mekanism:CoalBlock");
+                this.icons[4][0] = register.registerIcon("mekanism:RefinedGlowstone");
+                this.icons[5][0] = register.registerIcon("mekanism:SteelBlock");
+                this.icons[6][0] = register.registerIcon(BlockBasic.ICON_BASE);
+                MekanismRenderer.loadDynamicTextures(register, "bin/BinBasic", this.binIcons[0], new MekanismRenderer.DefIcon[] { new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinBasicTop"), new int[] { 0 }), new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinBasicTopOn"), new int[] { 6 }) });
+                MekanismRenderer.loadDynamicTextures(register, "bin/BinAdvanced", this.binIcons[1], new MekanismRenderer.DefIcon[] { new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinAdvancedTop"), new int[] { 0 }), new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinAdvancedTopOn"), new int[] { 6 }) });
+                MekanismRenderer.loadDynamicTextures(register, "bin/BinElite", this.binIcons[2], new MekanismRenderer.DefIcon[] { new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinEliteTop"), new int[] { 0 }), new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinEliteTopOn"), new int[] { 6 }) });
+                MekanismRenderer.loadDynamicTextures(register, "bin/BinUltimate", this.binIcons[3], new MekanismRenderer.DefIcon[] { new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinUltimateTop"), new int[] { 0 }), new MekanismRenderer.DefIcon(register.registerIcon("mekanism:bin/BinUltimateTopOn"), new int[] { 6 }) });
+                this.icons[7][0] = this.ctms[7][0].mainTextureData.icon;
+                this.icons[8][0] = register.registerIcon("mekanism:SteelCasing");
+                this.icons[9][0] = this.ctms[9][0].mainTextureData.icon;
+                this.icons[10][0] = this.ctms[10][0].mainTextureData.icon;
+                this.icons[11][0] = this.ctms[11][0].mainTextureData.icon;
+                this.icons[12][0] = register.registerIcon("mekanism:CopperBlock");
+                this.icons[13][0] = register.registerIcon("mekanism:TinBlock");
+                this.icons[14][0] = this.ctms[14][0].facingOverride.icon;
+                this.icons[14][1] = this.ctms[14][1].facingOverride.icon;
+                this.icons[14][2] = this.ctms[14][0].mainTextureData.icon;
+                this.icons[15][0] = this.ctms[15][0].mainTextureData.icon;
+                break;
+            }
+            case BASIC_BLOCK_2: {
+                this.ctms[0][0] = new CTMData("ctm/ThermalEvaporationBlock", this, Arrays.asList(0)).addOtherBlockConnectivities(MekanismBlocks.BasicBlock, Arrays.asList(14, 15)).registerIcons(register);
+                this.ctms[1][0] = new CTMData("ctm/InductionCasing", this, Arrays.asList(1, 2)).registerIcons(register);
+                this.ctms[2][0] = new CTMData("ctm/InductionPortInput", this, Arrays.asList(1, 2)).registerIcons(register);
+                this.ctms[2][1] = new CTMData("ctm/InductionPortOutput", this, Arrays.asList(1, 2)).registerIcons(register);
+                this.ctms[3][0] = new CTMData("ctm/InductionCellBasic", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[3][1] = new CTMData("ctm/InductionCellAdvanced", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[3][2] = new CTMData("ctm/InductionCellElite", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[3][3] = new CTMData("ctm/InductionCellUltimate", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[4][0] = new CTMData("ctm/InductionProviderBasic", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[4][1] = new CTMData("ctm/InductionProviderAdvanced", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[4][2] = new CTMData("ctm/InductionProviderElite", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[4][3] = new CTMData("ctm/InductionProviderUltimate", this, Arrays.asList(3, 4)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[5][0] = new CTMData("ctm/SuperheatingElement", this, Arrays.asList(5)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[5][1] = new CTMData("ctm/SuperheatingElementOn", this, Arrays.asList(5)).registerIcons(register).setRenderConvexConnections();
+                this.ctms[7][0] = new CTMData("ctm/BoilerCasing", this, Arrays.asList(7, 8)).registerIcons(register);
+                this.ctms[8][0] = new CTMData("ctm/BoilerValve", this, Arrays.asList(7, 8)).registerIcons(register);
+                this.icons[6][0] = register.registerIcon("mekanism:PressureDisperser");
+                this.icons[0][0] = this.ctms[0][0].mainTextureData.icon;
+                this.icons[1][0] = this.ctms[1][0].mainTextureData.icon;
+                this.icons[2][0] = this.ctms[2][0].mainTextureData.icon;
+                this.icons[2][1] = this.ctms[2][1].mainTextureData.icon;
+                this.icons[3][0] = this.ctms[3][0].mainTextureData.icon;
+                this.icons[3][1] = this.ctms[3][1].mainTextureData.icon;
+                this.icons[3][2] = this.ctms[3][2].mainTextureData.icon;
+                this.icons[3][3] = this.ctms[3][3].mainTextureData.icon;
+                this.icons[4][0] = this.ctms[4][0].mainTextureData.icon;
+                this.icons[4][1] = this.ctms[4][1].mainTextureData.icon;
+                this.icons[4][2] = this.ctms[4][2].mainTextureData.icon;
+                this.icons[4][3] = this.ctms[4][3].mainTextureData.icon;
+                this.icons[5][0] = this.ctms[5][0].mainTextureData.icon;
+                this.icons[5][1] = this.ctms[5][1].mainTextureData.icon;
+                this.icons[7][0] = this.ctms[7][0].mainTextureData.icon;
+                this.icons[8][0] = this.ctms[8][0].mainTextureData.icon;
+                this.icons[9][0] = register.registerIcon(BlockBasic.ICON_BASE);
+                break;
+            }
+        }
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(final IBlockAccess world, final int x, final int y, final int z, final int side) {
+        final int meta = world.getBlockMetadata(x, y, z);
+        switch (this.blockType) {
+            case BASIC_BLOCK_1: {
+                switch (meta) {
+                    case 6: {
+                        final TileEntityBin tileEntity = (TileEntityBin)world.getTileEntity(x, y, z);
+                        final boolean active = MekanismUtils.isActive(world, x, y, z);
+                        return this.binIcons[tileEntity.tier.ordinal()][MekanismUtils.getBaseOrientation(side, tileEntity.facing) + (active ? 6 : 0)];
+                    }
+                    case 14: {
+                        final TileEntityThermalEvaporationController tileEntity2 = (TileEntityThermalEvaporationController)world.getTileEntity(x, y, z);
+                        if (side == tileEntity2.facing) {
+                            return MekanismUtils.isActive(world, x, y, z) ? this.icons[meta][1] : this.icons[meta][0];
+                        }
+                        return this.icons[meta][2];
+                    }
+                    default: {
+                        return this.getIcon(side, meta);
+                    }
+                }
+                break;
+            }
+            case BASIC_BLOCK_2: {
+                switch (meta) {
+                    case 2: {
+                        final TileEntityInductionPort tileEntity3 = (TileEntityInductionPort)world.getTileEntity(x, y, z);
+                        return this.icons[meta][tileEntity3.mode];
+                    }
+                    case 3: {
+                        final TileEntityInductionCell tileEntity4 = (TileEntityInductionCell)world.getTileEntity(x, y, z);
+                        return this.icons[meta][tileEntity4.tier.ordinal()];
+                    }
+                    case 4: {
+                        final TileEntityInductionProvider tileEntity5 = (TileEntityInductionProvider)world.getTileEntity(x, y, z);
+                        return this.icons[meta][tileEntity5.tier.ordinal()];
+                    }
+                    case 5: {
+                        final TileEntitySuperheatingElement element = (TileEntitySuperheatingElement)world.getTileEntity(x, y, z);
+                        if (element.multiblockUUID != null && SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID) != null) {
+                            return this.icons[meta][SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID)];
+                        }
+                        return this.icons[meta][0];
+                    }
+                    default: {
+                        return this.getIcon(side, meta);
+                    }
+                }
+                break;
+            }
+            default: {
+                return null;
+            }
+        }
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(final int side, final int meta) {
+        switch (this.blockType) {
+            case BASIC_BLOCK_1: {
+                switch (meta) {
+                    case 14: {
+                        if (side == 2) {
+                            return this.icons[meta][0];
+                        }
+                        return this.icons[meta][2];
+                    }
+                    default: {
+                        return this.icons[meta][0];
+                    }
+                }
+                break;
+            }
+            case BASIC_BLOCK_2: {
+                return this.icons[meta][0];
+            }
+            default: {
+                return this.icons[meta][0];
+            }
+        }
+    }
+    
+    public int damageDropped(final int i) {
+        return i;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public void getSubBlocks(final Item item, final CreativeTabs creativetabs, final List list) {
+        for (final BasicType type : BasicType.values()) {
+            if (type.typeBlock == this.blockType) {
+                switch (type) {
+                    case INDUCTION_CELL:
+                    case INDUCTION_PROVIDER:
+                    case BIN: {
+                        for (final Tier.BaseTier tier : Tier.BaseTier.values()) {
+                            if (tier.isObtainable()) {
+                                final ItemStack stack = new ItemStack(item, 1, type.meta);
+                                ((ItemBlockBasic)stack.getItem()).setBaseTier(stack, tier);
+                                list.add(stack);
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        list.add(new ItemStack(item, 1, type.meta));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    public boolean canCreatureSpawn(final EnumCreatureType type, final IBlockAccess world, final int x, final int y, final int z) {
+        final int meta = world.getBlockMetadata(x, y, z);
+        switch (this.blockType) {
+            case BASIC_BLOCK_1: {
+                switch (meta) {
+                    case 10: {
+                        return false;
+                    }
+                    case 9:
+                    case 11: {
+                        final TileEntityDynamicTank tileEntity = (TileEntityDynamicTank)world.getTileEntity(x, y, z);
+                        if (tileEntity == null) {
+                            break;
+                        }
+                        if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+                            if (tileEntity.structure != null) {
+                                return false;
+                            }
+                            break;
+                        }
+                        else {
+                            if (tileEntity.clientHasStructure) {
+                                return false;
+                            }
+                            break;
+                        }
+                        break;
+                    }
+                }
+                return super.canCreatureSpawn(type, world, x, y, z);
+            }
+            case BASIC_BLOCK_2: {
+                switch (meta) {
+                    case 1:
+                    case 2:
+                    case 7:
+                    case 8: {
+                        final TileEntityMultiblock tileEntity2 = (TileEntityMultiblock)world.getTileEntity(x, y, z);
+                        if (tileEntity2 == null) {
+                            break;
+                        }
+                        if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+                            if (tileEntity2.structure != null) {
+                                return false;
+                            }
+                            break;
+                        }
+                        else {
+                            if (tileEntity2.clientHasStructure) {
+                                return false;
+                            }
+                            break;
+                        }
+                        break;
+                    }
+                }
+                return super.canCreatureSpawn(type, world, x, y, z);
+            }
+            default: {
+                return super.canCreatureSpawn(type, world, x, y, z);
+            }
+        }
+    }
+    
+    public void onBlockClicked(final World world, final int x, final int y, final int z, final EntityPlayer player) {
+        final BasicType type = BasicType.get(this, world.getBlockMetadata(x, y, z));
+        if (!world.isRemote && type == BasicType.BIN) {
+            final TileEntityBin bin = (TileEntityBin)world.getTileEntity(x, y, z);
+            final MovingObjectPosition pos = MekanismUtils.rayTrace(world, player);
+            if (pos != null && pos.sideHit == bin.facing && bin.bottomStack != null) {
+                if (!player.isSneaking()) {
+                    world.spawnEntityInWorld((Entity)new EntityItem(world, player.posX, player.posY, player.posZ, bin.removeStack().copy()));
+                }
+                else {
+                    world.spawnEntityInWorld((Entity)new EntityItem(world, player.posX, player.posY, player.posZ, bin.remove(1).copy()));
+                }
+            }
+        }
+    }
+    
+    public boolean onBlockActivated(final World world, final int x, final int y, final int z, final EntityPlayer entityplayer, final int i1, final float f1, final float f2, final float f3) {
+        final int metadata = world.getBlockMetadata(x, y, z);
+        final BasicType type = BasicType.get(this, metadata);
+        final TileEntity tile = world.getTileEntity(x, y, z);
+        if (type == BasicType.REFINED_OBSIDIAN && entityplayer.isSneaking()) {
+            entityplayer.openGui((Object)Mekanism.instance, 1, world, x, y, z);
+            return true;
+        }
+        if (tile instanceof TileEntityThermalEvaporationController) {
+            if (!entityplayer.isSneaking()) {
+                if (!world.isRemote) {
+                    entityplayer.openGui((Object)Mekanism.instance, 33, world, x, y, z);
+                }
+                return true;
+            }
+        }
+        else if (tile instanceof TileEntitySecurityDesk) {
+            final String owner = ((TileEntitySecurityDesk)tile).owner;
+            if (!entityplayer.isSneaking()) {
+                if (!world.isRemote) {
+                    if (owner == null || entityplayer.getCommandSenderName().equals(owner)) {
+                        entityplayer.openGui((Object)Mekanism.instance, 57, world, x, y, z);
+                    }
+                    else {
+                        SecurityUtils.displayNoAccess(entityplayer);
+                    }
+                }
+                return true;
+            }
+        }
+        else if (tile instanceof TileEntityBin) {
+            final TileEntityBin bin = (TileEntityBin)world.getTileEntity(x, y, z);
+            if (entityplayer.getCurrentEquippedItem() != null && MekanismUtils.hasUsableWrench(entityplayer, x, y, z)) {
+                if (!world.isRemote) {
+                    final Item tool = entityplayer.getCurrentEquippedItem().getItem();
+                    if (entityplayer.isSneaking()) {
+                        this.dismantleBlock(world, x, y, z, false);
+                        return true;
+                    }
+                    if (MekanismUtils.isBCWrench(tool)) {
+                        ((IToolWrench)tool).wrenchUsed(entityplayer, x, y, z);
+                    }
+                    final int change = ForgeDirection.ROTATION_MATRIX[ForgeDirection.UP.ordinal()][bin.facing];
+                    bin.setFacing((short)change);
+                    world.notifyBlocksOfNeighborChange(x, y, z, (Block)this);
+                }
+                return true;
+            }
+            if (!world.isRemote && bin.getItemCount() < bin.tier.storage) {
+                if (bin.addTicks == 0 && entityplayer.getCurrentEquippedItem() != null) {
+                    if (entityplayer.getCurrentEquippedItem() != null) {
+                        final ItemStack remain = bin.add(entityplayer.getCurrentEquippedItem());
+                        entityplayer.setCurrentItemOrArmor(0, remain);
+                        bin.addTicks = 5;
+                    }
+                }
+                else if (bin.addTicks > 0 && bin.getItemCount() > 0) {
+                    final ItemStack[] inv = entityplayer.inventory.mainInventory;
+                    for (int j = 0; j < inv.length; ++j) {
+                        if (bin.getItemCount() == bin.tier.storage) {
+                            break;
+                        }
+                        if (inv[j] != null) {
+                            final ItemStack remain2 = bin.add(inv[j]);
+                            inv[j] = remain2;
+                            bin.addTicks = 5;
+                        }
+                        ((EntityPlayerMP)entityplayer).sendContainerAndContentsToPlayer(entityplayer.openContainer, entityplayer.openContainer.getInventory());
+                    }
+                }
+            }
+            return true;
+        }
+        else {
+            if (tile instanceof IMultiblock) {
+                return world.isRemote || ((IMultiblock)world.getTileEntity(x, y, z)).onActivate(entityplayer);
+            }
+            if (tile instanceof IStructuralMultiblock) {
+                return world.isRemote || ((IStructuralMultiblock)world.getTileEntity(x, y, z)).onActivate(entityplayer);
+            }
+        }
+        return false;
+    }
+    
+    public boolean isSideSolid(final IBlockAccess world, final int x, final int y, final int z, final ForgeDirection side) {
+        return BasicType.get(this, world.getBlockMetadata(x, y, z)) != BasicType.STRUCTURAL_GLASS;
+    }
+    
+    public static boolean manageInventory(final EntityPlayer player, final TileEntityDynamicTank tileEntity) {
+        final ItemStack itemStack = player.getCurrentEquippedItem();
+        if (itemStack != null && tileEntity.structure != null) {
+            if (FluidContainerRegistry.isEmptyContainer(itemStack)) {
+                if (((SynchronizedTankData)tileEntity.structure).fluidStored != null && ((SynchronizedTankData)tileEntity.structure).fluidStored.amount >= 1000) {
+                    final ItemStack filled = FluidContainerRegistry.fillFluidContainer(((SynchronizedTankData)tileEntity.structure).fluidStored, itemStack);
+                    if (filled != null) {
+                        if (player.capabilities.isCreativeMode) {
+                            final FluidStack fluidStored = ((SynchronizedTankData)tileEntity.structure).fluidStored;
+                            fluidStored.amount -= FluidContainerRegistry.getFluidForFilledItem(filled).amount;
+                            if (((SynchronizedTankData)tileEntity.structure).fluidStored.amount == 0) {
+                                ((SynchronizedTankData)tileEntity.structure).fluidStored = null;
+                            }
+                            return true;
+                        }
+                        if (itemStack.stackSize > 1) {
+                            if (player.inventory.addItemStackToInventory(filled)) {
+                                final ItemStack itemStack2 = itemStack;
+                                --itemStack2.stackSize;
+                                final FluidStack fluidStored2 = ((SynchronizedTankData)tileEntity.structure).fluidStored;
+                                fluidStored2.amount -= FluidContainerRegistry.getFluidForFilledItem(filled).amount;
+                                if (((SynchronizedTankData)tileEntity.structure).fluidStored.amount == 0) {
+                                    ((SynchronizedTankData)tileEntity.structure).fluidStored = null;
+                                }
+                                return true;
+                            }
+                        }
+                        else if (itemStack.stackSize == 1) {
+                            player.setCurrentItemOrArmor(0, filled);
+                            final FluidStack fluidStored3 = ((SynchronizedTankData)tileEntity.structure).fluidStored;
+                            fluidStored3.amount -= FluidContainerRegistry.getFluidForFilledItem(filled).amount;
+                            if (((SynchronizedTankData)tileEntity.structure).fluidStored.amount == 0) {
+                                ((SynchronizedTankData)tileEntity.structure).fluidStored = null;
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if (FluidContainerRegistry.isFilledContainer(itemStack)) {
+                final FluidStack itemFluid = FluidContainerRegistry.getFluidForFilledItem(itemStack);
+                final int max = ((SynchronizedTankData)tileEntity.structure).volume * 64000;
+                if (((SynchronizedTankData)tileEntity.structure).fluidStored == null || (((SynchronizedTankData)tileEntity.structure).fluidStored.isFluidEqual(itemFluid) && ((SynchronizedTankData)tileEntity.structure).fluidStored.amount + itemFluid.amount <= max)) {
+                    boolean filled2 = false;
+                    if (player.capabilities.isCreativeMode) {
+                        filled2 = true;
+                    }
+                    else {
+                        final ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
+                        if (containerItem != null) {
+                            if (itemStack.stackSize == 1) {
+                                player.setCurrentItemOrArmor(0, containerItem);
+                                filled2 = true;
+                            }
+                            else if (player.inventory.addItemStackToInventory(containerItem)) {
+                                final ItemStack itemStack3 = itemStack;
+                                --itemStack3.stackSize;
+                                filled2 = true;
+                            }
+                        }
+                        else {
+                            final ItemStack itemStack4 = itemStack;
+                            --itemStack4.stackSize;
+                            if (itemStack.stackSize == 0) {
+                                player.setCurrentItemOrArmor(0, (ItemStack)null);
+                            }
+                            filled2 = true;
+                        }
+                    }
+                    if (filled2) {
+                        if (((SynchronizedTankData)tileEntity.structure).fluidStored == null) {
+                            ((SynchronizedTankData)tileEntity.structure).fluidStored = itemFluid;
+                        }
+                        else {
+                            final FluidStack fluidStored4 = ((SynchronizedTankData)tileEntity.structure).fluidStored;
+                            fluidStored4.amount += itemFluid.amount;
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean renderAsNormalBlock() {
+        return false;
+    }
+    
+    public boolean isOpaqueCube() {
+        return false;
+    }
+    
+    public int getRenderType() {
+        final CommonProxy proxy = Mekanism.proxy;
+        return CommonProxy.CTM_RENDER_ID;
+    }
+    
+    public int getLightValue(final IBlockAccess world, final int x, final int y, final int z) {
+        final TileEntity tileEntity = world.getTileEntity(x, y, z);
+        final int metadata = world.getBlockMetadata(x, y, z);
+        if (tileEntity instanceof IActiveState && ((IActiveState)tileEntity).getActive() && ((IActiveState)tileEntity).lightUpdate()) {
+            return 15;
+        }
+        if (this.blockType == BasicBlock.BASIC_BLOCK_1) {
+            switch (metadata) {
+                case 2: {
+                    return 8;
+                }
+                case 4: {
+                    return 15;
+                }
+                case 7: {
+                    return 12;
+                }
+            }
+        }
+        else if (this.blockType == BasicBlock.BASIC_BLOCK_2 && metadata == 5) {
+            final TileEntitySuperheatingElement element = (TileEntitySuperheatingElement)tileEntity;
+            if (element.multiblockUUID != null && SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID) != null) {
+                return SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID) ? 15 : 0;
+            }
+            return 0;
+        }
+        return 0;
+    }
+    
+    public boolean hasTileEntity(final int metadata) {
+        final BasicType type = BasicType.get(this.blockType, metadata);
+        return type != null && type.tileEntityClass != null;
+    }
+    
+    public void onBlockAdded(final World world, final int x, final int y, final int z) {
+        final TileEntity tileEntity = world.getTileEntity(x, y, z);
+        if (!world.isRemote && tileEntity instanceof TileEntityBasicBlock) {
+            ((TileEntityBasicBlock)tileEntity).onAdded();
+        }
+    }
+    
+    public TileEntity createTileEntity(final World world, final int metadata) {
+        if (BasicType.get(this.blockType, metadata) == null) {
+            return null;
+        }
+        return BasicType.get(this.blockType, metadata).create();
+    }
+    
+    public void onBlockPlacedBy(final World world, final int x, final int y, final int z, final EntityLivingBase entityliving, final ItemStack itemstack) {
+        if (world.getTileEntity(x, y, z) instanceof TileEntityBasicBlock) {
+            final TileEntityBasicBlock tileEntity = (TileEntityBasicBlock)world.getTileEntity(x, y, z);
+            final int side = MathHelper.floor_double(entityliving.rotationYaw * 4.0f / 360.0f + 0.5) & 0x3;
+            final int height = Math.round(entityliving.rotationPitch);
+            int change = 3;
+            if (tileEntity.canSetFacing(0) && tileEntity.canSetFacing(1)) {
+                if (height >= 65) {
+                    change = 1;
+                }
+                else if (height <= -65) {
+                    change = 0;
+                }
+            }
+            if (change != 0 && change != 1) {
+                switch (side) {
+                    case 0: {
+                        change = 2;
+                        break;
+                    }
+                    case 1: {
+                        change = 5;
+                        break;
+                    }
+                    case 2: {
+                        change = 3;
+                        break;
+                    }
+                    case 3: {
+                        change = 4;
+                        break;
+                    }
+                }
+            }
+            tileEntity.setFacing((short)change);
+            tileEntity.redstone = world.isBlockIndirectlyGettingPowered(x, y, z);
+            if (tileEntity instanceof TileEntitySecurityDesk) {
+                ((TileEntitySecurityDesk)tileEntity).owner = entityliving.getCommandSenderName();
+            }
+            if (tileEntity instanceof IBoundingBlock) {
+                ((IBoundingBlock)tileEntity).onPlace();
+            }
+        }
+        world.func_147479_m(x, y, z);
+        world.updateLightByType(EnumSkyBlock.Block, x, y, z);
+        world.updateLightByType(EnumSkyBlock.Sky, x, y, z);
+        if (!world.isRemote && world.getTileEntity(x, y, z) != null) {
+            final TileEntity tileEntity2 = world.getTileEntity(x, y, z);
+            if (tileEntity2 instanceof IMultiblock) {
+                ((IMultiblock)tileEntity2).update();
+            }
+            if (tileEntity2 instanceof IStructuralMultiblock) {
+                ((IStructuralMultiblock)tileEntity2).update();
+            }
+        }
+    }
+    
+    public void breakBlock(final World world, final int x, final int y, final int z, final Block block, final int meta) {
+        final TileEntity tileEntity = world.getTileEntity(x, y, z);
+        if (tileEntity instanceof IBoundingBlock) {
+            ((IBoundingBlock)tileEntity).onBreak();
+        }
+        super.breakBlock(world, x, y, z, block, meta);
+    }
+    
+    public ItemStack getPickBlock(final MovingObjectPosition target, final World world, final int x, final int y, final int z, final EntityPlayer player) {
+        final BasicType type = BasicType.get(this, world.getBlockMetadata(x, y, z));
+        final ItemStack ret = new ItemStack((Block)this, 1, type.meta);
+        if (type == BasicType.BIN) {
+            final TileEntityBin tileEntity = (TileEntityBin)world.getTileEntity(x, y, z);
+            final InventoryBin inv = new InventoryBin(ret);
+            ((ITierItem)ret.getItem()).setBaseTier(ret, tileEntity.tier.getBaseTier());
+            inv.setItemCount(tileEntity.getItemCount());
+            if (tileEntity.getItemCount() > 0) {
+                inv.setItemType(tileEntity.itemType);
+            }
+        }
+        else if (type == BasicType.INDUCTION_CELL) {
+            final TileEntityInductionCell tileEntity2 = (TileEntityInductionCell)world.getTileEntity(x, y, z);
+            ((ItemBlockBasic)ret.getItem()).setBaseTier(ret, tileEntity2.tier.getBaseTier());
+        }
+        else if (type == BasicType.INDUCTION_PROVIDER) {
+            final TileEntityInductionProvider tileEntity3 = (TileEntityInductionProvider)world.getTileEntity(x, y, z);
+            ((ItemBlockBasic)ret.getItem()).setBaseTier(ret, tileEntity3.tier.getBaseTier());
+        }
+        final TileEntity tileEntity4 = world.getTileEntity(x, y, z);
+        if (tileEntity4 instanceof IStrictEnergyStorage) {
+            final IEnergizedItem energizedItem = (IEnergizedItem)ret.getItem();
+            energizedItem.setEnergy(ret, ((IStrictEnergyStorage)tileEntity4).getEnergy());
+        }
+        return ret;
+    }
+    
+    public Item getItemDropped(final int i, final Random random, final int j) {
+        return null;
+    }
+    
+    public boolean removedByPlayer(final World world, final EntityPlayer player, final int x, final int y, final int z, final boolean willHarvest) {
+        if (!player.capabilities.isCreativeMode && !world.isRemote && willHarvest) {
+            final float motion = 0.7f;
+            final double motionX = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final double motionY = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final double motionZ = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final EntityItem entityItem = new EntityItem(world, x + motionX, y + motionY, z + motionZ, this.getPickBlock(null, world, x, y, z, player));
+            world.spawnEntityInWorld((Entity)entityItem);
+        }
+        return world.setBlockToAir(x, y, z);
+    }
+    
+    public ItemStack dismantleBlock(final World world, final int x, final int y, final int z, final boolean returnBlock) {
+        final ItemStack itemStack = this.getPickBlock(null, world, x, y, z, null);
+        world.setBlockToAir(x, y, z);
+        if (!returnBlock) {
+            final float motion = 0.7f;
+            final double motionX = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final double motionY = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final double motionZ = world.rand.nextFloat() * motion + (1.0f - motion) * 0.5;
+            final EntityItem entityItem = new EntityItem(world, x + motionX, y + motionY, z + motionZ, itemStack);
+            world.spawnEntityInWorld((Entity)entityItem);
+        }
+        return itemStack;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public boolean shouldSideBeRendered(final IBlockAccess world, final int x, final int y, final int z, final int side) {
+        final Coord4D obj = new Coord4D(x, y, z).getFromSide(ForgeDirection.getOrientation(side).getOpposite());
+        if (BasicType.get(this, obj.getMetadata(world)) == BasicType.STRUCTURAL_GLASS) {
+            return this.ctms[10][0].shouldRenderSide(world, x, y, z, side);
+        }
+        return super.shouldSideBeRendered(world, x, y, z, side);
+    }
+    
+    public ForgeDirection[] getValidRotations(final World world, final int x, final int y, final int z) {
+        final TileEntity tile = world.getTileEntity(x, y, z);
+        final ForgeDirection[] valid = new ForgeDirection[6];
+        if (tile instanceof TileEntityBasicBlock) {
+            final TileEntityBasicBlock basicTile = (TileEntityBasicBlock)tile;
+            for (final ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                if (basicTile.canSetFacing(dir.ordinal())) {
+                    valid[dir.ordinal()] = dir;
+                }
+            }
+        }
+        return valid;
+    }
+    
+    public boolean rotateBlock(final World world, final int x, final int y, final int z, final ForgeDirection axis) {
+        final TileEntity tile = world.getTileEntity(x, y, z);
+        if (tile instanceof TileEntityBasicBlock) {
+            final TileEntityBasicBlock basicTile = (TileEntityBasicBlock)tile;
+            if (basicTile.canSetFacing(axis.ordinal())) {
+                basicTile.setFacing((short)axis.ordinal());
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public CTMData getCTMData(final IBlockAccess world, final int x, final int y, final int z, final int meta) {
+        if (this.ctms[meta][1] != null && MekanismUtils.isActive(world, x, y, z)) {
+            return this.ctms[meta][1];
+        }
+        final BasicType type = BasicType.get(this, world.getBlockMetadata(x, y, z));
+        if (type == BasicType.INDUCTION_CELL) {
+            final TileEntityInductionCell tileEntity = (TileEntityInductionCell)world.getTileEntity(x, y, z);
+            return this.ctms[meta][tileEntity.tier.ordinal()];
+        }
+        if (type == BasicType.INDUCTION_PROVIDER) {
+            final TileEntityInductionProvider tileEntity2 = (TileEntityInductionProvider)world.getTileEntity(x, y, z);
+            return this.ctms[meta][tileEntity2.tier.ordinal()];
+        }
+        if (type != BasicType.SUPERHEATING_ELEMENT) {
+            return this.ctms[meta][0];
+        }
+        final TileEntitySuperheatingElement element = (TileEntitySuperheatingElement)world.getTileEntity(x, y, z);
+        if (element.multiblockUUID != null && SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID) != null) {
+            return this.ctms[meta][SynchronizedBoilerData.clientHotMap.get(element.multiblockUUID)];
+        }
+        return this.ctms[meta][0];
+    }
+    
+    public boolean shouldRenderBlock(final IBlockAccess world, final int x, final int y, final int z, final int meta) {
+        return BasicType.get(this, world.getBlockMetadata(x, y, z)) != BasicType.SECURITY_DESK;
+    }
+    
+    static {
+        BlockBasic.ICON_BASE = "mekanism:SteelCasing";
+    }
+    
+    public enum BasicType
+    {
+        OSMIUM_BLOCK(BasicBlock.BASIC_BLOCK_1, 0, "OsmiumBlock", (Class<? extends TileEntity>)null, false), 
+        BRONZE_BLOCK(BasicBlock.BASIC_BLOCK_1, 1, "BronzeBlock", (Class<? extends TileEntity>)null, false), 
+        REFINED_OBSIDIAN(BasicBlock.BASIC_BLOCK_1, 2, "RefinedObsidian", (Class<? extends TileEntity>)null, false), 
+        CHARCOAL_BLOCK(BasicBlock.BASIC_BLOCK_1, 3, "CharcoalBlock", (Class<? extends TileEntity>)null, false), 
+        REFINED_GLOWSTONE(BasicBlock.BASIC_BLOCK_1, 4, "RefinedGlowstone", (Class<? extends TileEntity>)null, false), 
+        STEEL_BLOCK(BasicBlock.BASIC_BLOCK_1, 5, "SteelBlock", (Class<? extends TileEntity>)null, false), 
+        BIN(BasicBlock.BASIC_BLOCK_1, 6, "Bin", (Class<? extends TileEntity>)TileEntityBin.class, true), 
+        TELEPORTER_FRAME(BasicBlock.BASIC_BLOCK_1, 7, "TeleporterFrame", (Class<? extends TileEntity>)null, true), 
+        STEEL_CASING(BasicBlock.BASIC_BLOCK_1, 8, "SteelCasing", (Class<? extends TileEntity>)null, true), 
+        DYNAMIC_TANK(BasicBlock.BASIC_BLOCK_1, 9, "DynamicTank", (Class<? extends TileEntity>)TileEntityDynamicTank.class, true), 
+        STRUCTURAL_GLASS(BasicBlock.BASIC_BLOCK_1, 10, "StructuralGlass", (Class<? extends TileEntity>)TileEntityStructuralGlass.class, true), 
+        DYNAMIC_VALVE(BasicBlock.BASIC_BLOCK_1, 11, "DynamicValve", (Class<? extends TileEntity>)TileEntityDynamicValve.class, true), 
+        COPPER_BLOCK(BasicBlock.BASIC_BLOCK_1, 12, "CopperBlock", (Class<? extends TileEntity>)null, false), 
+        TIN_BLOCK(BasicBlock.BASIC_BLOCK_1, 13, "TinBlock", (Class<? extends TileEntity>)null, false), 
+        THERMAL_EVAPORATION_CONTROLLER(BasicBlock.BASIC_BLOCK_1, 14, "ThermalEvaporationController", (Class<? extends TileEntity>)TileEntityThermalEvaporationController.class, true), 
+        THERMAL_EVAPORATION_VALVE(BasicBlock.BASIC_BLOCK_1, 15, "ThermalEvaporationValve", (Class<? extends TileEntity>)TileEntityThermalEvaporationValve.class, true), 
+        THERMAL_EVAPORATION_BLOCK(BasicBlock.BASIC_BLOCK_2, 0, "ThermalEvaporationBlock", (Class<? extends TileEntity>)TileEntityThermalEvaporationBlock.class, true), 
+        INDUCTION_CASING(BasicBlock.BASIC_BLOCK_2, 1, "InductionCasing", (Class<? extends TileEntity>)TileEntityInductionCasing.class, true), 
+        INDUCTION_PORT(BasicBlock.BASIC_BLOCK_2, 2, "InductionPort", (Class<? extends TileEntity>)TileEntityInductionPort.class, true), 
+        INDUCTION_CELL(BasicBlock.BASIC_BLOCK_2, 3, "InductionCell", (Class<? extends TileEntity>)TileEntityInductionCell.class, true), 
+        INDUCTION_PROVIDER(BasicBlock.BASIC_BLOCK_2, 4, "InductionProvider", (Class<? extends TileEntity>)TileEntityInductionProvider.class, true), 
+        SUPERHEATING_ELEMENT(BasicBlock.BASIC_BLOCK_2, 5, "SuperheatingElement", (Class<? extends TileEntity>)TileEntitySuperheatingElement.class, true), 
+        PRESSURE_DISPERSER(BasicBlock.BASIC_BLOCK_2, 6, "PressureDisperser", (Class<? extends TileEntity>)TileEntityPressureDisperser.class, true), 
+        BOILER_CASING(BasicBlock.BASIC_BLOCK_2, 7, "BoilerCasing", (Class<? extends TileEntity>)TileEntityBoilerCasing.class, true), 
+        BOILER_VALVE(BasicBlock.BASIC_BLOCK_2, 8, "BoilerValve", (Class<? extends TileEntity>)TileEntityBoilerValve.class, true), 
+        SECURITY_DESK(BasicBlock.BASIC_BLOCK_2, 9, "SecurityDesk", (Class<? extends TileEntity>)TileEntitySecurityDesk.class, true);
+        
+        public BasicBlock typeBlock;
+        public int meta;
+        public String name;
+        public Class<? extends TileEntity> tileEntityClass;
+        public boolean hasDescription;
+        
+        private BasicType(final BasicBlock block, final int i, final String s, final Class<? extends TileEntity> tileClass, final boolean hasDesc) {
+            this.typeBlock = block;
+            this.meta = i;
+            this.name = s;
+            this.tileEntityClass = tileClass;
+            this.hasDescription = hasDesc;
+        }
+        
+        public static BasicType get(final Block block, final int meta) {
+            if (block instanceof BlockBasic) {
+                return get(((BlockBasic)block).blockType, meta);
+            }
+            return null;
+        }
+        
+        public static BasicType get(final BasicBlock block, final int meta) {
+            for (final BasicType type : values()) {
+                if (type.meta == meta && type.typeBlock == block) {
+                    return type;
+                }
+            }
+            return null;
+        }
+        
+        public TileEntity create() {
+            try {
+                return (TileEntity)this.tileEntityClass.newInstance();
+            }
+            catch (Exception e) {
+                Mekanism.logger.error("Unable to indirectly create tile entity.");
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        public String getDescription() {
+            return LangUtils.localize("tooltip." + this.name);
+        }
+        
+        public ItemStack getStack() {
+            return new ItemStack(this.typeBlock.getBlock(), 1, this.meta);
+        }
+        
+        public static BasicType get(final ItemStack stack) {
+            return get(Block.getBlockFromItem(stack.getItem()), stack.getItemDamage());
+        }
+    }
+    
+    public enum BasicBlock
+    {
+        BASIC_BLOCK_1, 
+        BASIC_BLOCK_2;
+        
+        public Block getBlock() {
+            switch (this) {
+                case BASIC_BLOCK_1: {
+                    return MekanismBlocks.BasicBlock;
+                }
+                case BASIC_BLOCK_2: {
+                    return MekanismBlocks.BasicBlock2;
+                }
+                default: {
+                    return null;
+                }
+            }
+        }
+    }
+}
